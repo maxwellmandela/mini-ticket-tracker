@@ -6,11 +6,28 @@ require_once __DIR__ . '/../src/controllers/TicketController.php';
 
 header('Content-Type: application/json');
 
-$database = new Database(
-    __DIR__ . '/../database/app.sqlite'
+$host = getenv('DB_HOST') ?: 'db';
+$port = getenv('DB_PORT') ?: '5432';
+$database = getenv('DB_NAME') ?: 'ticket_tracker';
+$username = getenv('DB_USER') ?: 'ticket_app';
+$password = getenv('DB_PASSWORD');
+
+if ($password === false || $password === '') {
+    http_response_code(500);
+    echo json_encode(['error' => 'Database password is not configured']);
+    exit;
+}
+
+$databaseConnection = new Database(
+    $host,
+    $port,
+    $database,
+    $username,
+    $password
 );
 
-$db = $database->connection();
+$db = $databaseConnection->connection();
+
 $router = new Router();
 
 $items_controller = new TicketController($db);

@@ -1,0 +1,40 @@
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ticket_tracker
+      POSTGRES_USER: ticket_app
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-local_dev_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./server/database/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ticket_app -d ticket_tracker"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: 172.18.0.1
+      DB_PORT: 5432
+      DB_NAME: ticket_tracker
+      DB_USER: ticket_app
+      DB_PASSWORD: ${DB_PASSWORD:-local_dev_password}
+    ports:
+      - "8000:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./server:/var/www/html
+      - ./server/php-dev.ini:/usr/local/etc/php/conf.d/99-dev.ini:ro
+
+volumes:
+  postgres_data:
