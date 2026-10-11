@@ -28,7 +28,7 @@ class Router
             return;
         }
 
-        // Match a ticket URL containing a numeric ID.
+        // Match a ticket URL containing a ticket ID to help pass it to the get single item and patch controller methods
         if (
             in_array($method, ['GET', 'PATCH']) &&
             preg_match('#^/api/tickets/([1-9][0-9]*)$#', $path, $matches)
