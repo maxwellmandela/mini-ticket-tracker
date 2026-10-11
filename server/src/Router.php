@@ -14,20 +14,39 @@ class Router
         $this->routes['GET'][$path] = $handler;
     }
 
+    public function patch(string $path, callable $handler): void
+    {
+        $this->routes['PATCH'][$path] = $handler;
+    }
+
     public function dispatch(string $method, string $path): void
     {
         $handler = $this->routes[$method][$path] ?? null;
 
-        if ($handler === null) {
-            http_response_code(404);
-
-            echo json_encode([
-                'error' => 'Route not found'
-            ]);
-
+        if ($handler !== null) {
+            $handler();
             return;
         }
 
-        $handler();
+        // Match a ticket URL containing a numeric ID.
+        if (
+            in_array($method, ['GET', 'PATCH']) &&
+            preg_match('#^/api/tickets/([1-9][0-9]*)$#', $path, $matches)
+        ) {
+            $id = (int) $matches[1];
+
+            $handler = $this->routes[$method]['/api/tickets'] ?? null;
+
+            if ($handler !== null) {
+                $handler($id);
+                return;
+            }
+        }
+
+        http_response_code(404);
+
+        echo json_encode([
+            'error' => 'Route not found'
+        ]);
     }
 }
