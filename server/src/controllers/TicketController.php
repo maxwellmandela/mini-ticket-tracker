@@ -116,7 +116,7 @@ class TicketController {
             http_response_code(400);
             echo json_encode(['error' => 'Description must be a string or null']);
             return;
-        }
+        } 
 
         $allowedPriorities = ['low', 'medium', 'high'];
 
@@ -210,6 +210,27 @@ class TicketController {
 
         http_response_code(200);
         echo json_encode(['item' => $ticket]);
+    }
+
+    public function stats(): void
+    {
+        $stmt = $this->database->query(
+            "SELECT
+                COUNT(*) AS total,
+                COUNT(*) FILTER (WHERE status = 'open') AS open,
+                COUNT(*) FILTER (WHERE status = 'in_progress') AS in_progress,
+                COUNT(*) FILTER (WHERE status = 'closed') AS closed
+            FROM tickets"
+        );
+
+        $stats = $stmt->fetch();
+
+        echo json_encode([
+            'total' => (int) $stats['total'],
+            'open' => (int) $stats['open'],
+            'in_progress' => (int) $stats['in_progress'],
+            'closed' => (int) $stats['closed'],
+        ]);
     }
 
 }

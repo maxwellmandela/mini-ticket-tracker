@@ -44,6 +44,8 @@ $router->post('/api/tickets', [$items_controller, 'create']);
 
 $router->patch('/api/tickets', [$items_controller, 'update']);
 
+$router->get('/api/tickets/stats', [$items_controller, 'stats']);
+
 $router->dispatch(
     $_SERVER['REQUEST_METHOD'],
     parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH)
